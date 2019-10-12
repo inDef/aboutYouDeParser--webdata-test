@@ -1,14 +1,14 @@
 package me.indef.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
-@Data
-@NoArgsConstructor
+@Getter
+@Setter
+@EqualsAndHashCode
 @AllArgsConstructor
+@NoArgsConstructor
 public class Product {
 
     private String name;
