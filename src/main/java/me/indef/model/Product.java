@@ -15,7 +15,10 @@ public class Product {
     private String brand;
     private String color;
     private String price;
+    private String initialPrice;
     private String articleId;
     private List<String> sizesAvailable;
+    private String url;
+    private String imageUrl;
 
 }
