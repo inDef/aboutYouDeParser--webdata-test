@@ -23,7 +23,7 @@ public class ProductsLinksProvider {
             CounterService.increaseHTTP();
 
             categoryId = categoryPage.getElementsByAttributeValue("charSet", "UTF-8").get(2).html()
-                    .split("\"" + url.split("aboutyou.de")[1] + "\":\"")[1].split("\"}")[0];
+                    .split("\"" + url.split("\\?")[0].split("aboutyou.de")[1] + "\":\"")[1].split("\"}")[0];
 
         } catch (IOException e) {
             e.printStackTrace();
