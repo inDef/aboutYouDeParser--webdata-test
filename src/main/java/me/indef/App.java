@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 public class App {
     private static List<MultiThreadParseService> parseThreadList = new ArrayList<>();
@@ -18,11 +19,11 @@ public class App {
 
     public static void main(String[] args) {
 
-        ConcurrentLinkedQueue<Product> resultQueue = new ConcurrentLinkedQueue<>();
+        CopyOnWriteArraySet<Product> resultSet = new CopyOnWriteArraySet<>();
 
-        ConcurrentSkipListSet<String> links = ProductsLinksProvider.getByCategoryPageUrl("https://www.aboutyou.de/maenner/bekleidung", 1, 99);
+        ConcurrentSkipListSet<String> links = ProductsLinksProvider.getByCategoryPageUrl("https://www.aboutyou.de/maenner/bekleidung", 1, 495);
         for (String link : links) {
-            MultiThreadParseService parse = new MultiThreadParseService(link, resultQueue);
+            MultiThreadParseService parse = new MultiThreadParseService(link, resultSet);
             parseThreadList.add(parse);
             parse.start();
         }
@@ -36,7 +37,7 @@ public class App {
             }
         }
 
-        JsonToFileService.writeToFile(resultQueue);
+        JsonToFileService.writeToFile(resultSet);
         System.out.println("Http requests done: " + CounterService.getHttpRequestsCounter());
         System.out.println("Products retrieved: " + CounterService.getProductsRetrievedCounter());
 

@@ -3,16 +3,16 @@ package me.indef.service;
 import lombok.AllArgsConstructor;
 import me.indef.model.Product;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 @AllArgsConstructor
 public class MultiThreadParseService extends Thread {
 
     private String link;
-    private ConcurrentLinkedQueue<Product> concurrentLinkedQueue;
+    private CopyOnWriteArraySet<Product> productSet;
 
     @Override
     public void run() {
-        ProductParser.getProductsByUrlAndAddToProvidedQueue(link, concurrentLinkedQueue);
+        ProductParser.getProductsByUrlAndAddToProvidedSet(link, productSet);
     }
 }

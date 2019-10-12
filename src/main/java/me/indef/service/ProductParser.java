@@ -8,12 +8,12 @@ import org.jsoup.nodes.Document;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 class ProductParser {
 
-    static void getProductsByUrlAndAddToProvidedQueue
-            (String url, ConcurrentLinkedQueue<Product> productConcurrentLinkedQueue) {
+    static void getProductsByUrlAndAddToProvidedSet
+            (String url, CopyOnWriteArraySet<Product> productSet) {
 
         try {
             Document categoryPage = Jsoup.connect(url)
@@ -32,15 +32,15 @@ class ProductParser {
                     .readTree(elementJSON)
                     .path(productId);
 
-            getProductFromJsonNodeAndAddToProvidedQueue(productJSON, productConcurrentLinkedQueue);
+            getProductFromJsonNodeAndAddToProvidedSet(productJSON, productSet);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private static void getProductFromJsonNodeAndAddToProvidedQueue
-            (JsonNode productJSON, ConcurrentLinkedQueue<Product> productConcurrentLinkedQueue) {
+    private static void getProductFromJsonNodeAndAddToProvidedSet
+            (JsonNode productJSON, CopyOnWriteArraySet<Product> productSet) {
 
         if (productJSON.size() == 0) return;
 
@@ -81,14 +81,13 @@ class ProductParser {
         product.setPrice(formattedPrice);
         product.setSizesAvailable(sizesAvailable);
 
-        productConcurrentLinkedQueue.add(product);
-        CounterService.increaseProducts();
+        if(productSet.add(product)) CounterService.increaseProducts();
 
         JsonNode siblings = productJSON.path("siblings");
         if (siblings.size() > 0) {
             for (JsonNode sibling :
                     siblings) {
-                getProductFromJsonNodeAndAddToProvidedQueue(sibling, productConcurrentLinkedQueue);
+                getProductFromJsonNodeAndAddToProvidedSet(sibling, productSet);
             }
         }
     }
