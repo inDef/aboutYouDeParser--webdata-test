@@ -8,34 +8,31 @@ import me.indef.service.ProductsLinksProvider;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public class App {
-    private static List<MultiThreadParseService> parseThreadList = new ArrayList<>();
-
-    private static Boolean isAnyAlive = true;
+    private static List<Thread> threads = new ArrayList<>();
 
     public static void main(String[] args) {
 
         CopyOnWriteArraySet<Product> resultSet = new CopyOnWriteArraySet<>();
 
-        ConcurrentSkipListSet<String> links = ProductsLinksProvider.getByCategoryPageUrl("https://www.aboutyou.de/maenner/bekleidung", 1, 495);
+        ConcurrentSkipListSet<String> links = ProductsLinksProvider.getByCategoryPageUrl("https://www.aboutyou.de/maenner/bekleidung", 1, 99);
+
         for (String link : links) {
-            MultiThreadParseService parse = new MultiThreadParseService(link, resultSet);
-            parseThreadList.add(parse);
+            Thread parse = new MultiThreadParseService(link, resultSet);
+            threads.add(parse);
             parse.start();
         }
 
-        while (isAnyAlive) {
+        do {
             try {
-                Thread.sleep(1000);
-                checkAlive(parseThreadList);
+                Thread.sleep(3000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }
+        } while (threadsStillWork(threads));
 
         JsonToFileService.writeToFile(resultSet);
         System.out.println("Http requests done: " + CounterService.getHttpRequestsCounter());
@@ -43,13 +40,13 @@ public class App {
 
     }
 
-    private static void checkAlive(List<MultiThreadParseService> parseThreadList) {
-        for (MultiThreadParseService parseThread : parseThreadList) {
-            if (parseThread.isAlive()) {
-                isAnyAlive = true;
-                return;
+    private static boolean threadsStillWork(List<Thread> threads) {
+        for (Thread thread : threads) {
+            if (thread.getState().equals(Thread.State.NEW) || thread.isAlive()) {
+                return true;
             }
         }
-        isAnyAlive = false;
+
+        return false;
     }
 }
