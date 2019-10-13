@@ -1,18 +1,18 @@
-package me.indef.service;
+package me.indef.util;
 
 import lombok.Getter;
 
-public class CounterService {
+public class Counter {
     @Getter
     private static Integer httpRequestsCounter = 0;
     @Getter
     private static Integer productsRetrievedCounter = 0;
 
-    static void increaseHTTP() {
+    public static void increaseHTTP() {
         httpRequestsCounter++;
     }
 
-    static void increaseProducts() {
+    public static void increaseProducts() {
         productsRetrievedCounter++;
     }
 }
