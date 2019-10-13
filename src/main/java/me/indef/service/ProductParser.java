@@ -7,28 +7,50 @@ import me.indef.util.ProductJsonNodeProvider;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.Set;
+import java.util.concurrent.Semaphore;
 
 class ProductParser {
 
-    public static void parseProductAddToProvidedSet(String productUrl, CopyOnWriteArraySet<Product> productSet, Boolean includeSiblings) {
+    private static final Semaphore SEMAPHORE = new Semaphore(100, true);
 
-        JsonNode productJSON = ProductJsonNodeProvider.getFromUrl(productUrl);
+    public static void parseProductAddToProvidedSet(String productUrl, Set<Product> productSet, Boolean includeSiblings) {
+
+        try {
+            SEMAPHORE.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        JsonNode productJSON = null;
+
+        if (!doesProductSetContainProductByUrl(productUrl, productSet)) {
+            productJSON = ProductJsonNodeProvider.getFromUrl(productUrl);
+        }
+
+        SEMAPHORE.release();
+
         if (productJSON == null) return;
 
         Product product = fetchProductFromJsonNode(productJSON);
+        if (product.getId() < 0) {
+            System.out.println("This product url is unreachable: " + productUrl + ". It won't be added.");
+            return;
+        }
         if (productSet.add(product)) Counter.increaseProducts();
 
         if (!includeSiblings) return;
         JsonNode siblings = productJSON.path("siblings");
-        for (JsonNode sibling :
-                siblings) {
+        for (JsonNode sibling : siblings) {
             Product siblingProduct = fetchProductFromJsonNode(sibling);
             if (productSet.add(siblingProduct)) Counter.increaseProducts();
         }
+
     }
 
     private static Product fetchProductFromJsonNode(JsonNode productJSON) {
+
+        Integer id = productJSON.path("id").asInt(-1);
 
         String name = productJSON.path("name").asText();
 
@@ -68,6 +90,7 @@ class ProductParser {
         }
 
         Product product = new Product();
+        product.setId(id);
         product.setArticleId(articleId);
         product.setName(name);
         product.setBrand(brand);
@@ -83,6 +106,14 @@ class ProductParser {
 
     private static String formatPrice(Integer price, String currency) {
         return price / 100 + "." + price % 100 + " " + currency;
+    }
+
+    private static Boolean doesProductSetContainProductByUrl(String url, Set<Product> productSet) {
+        String[] splitUtilArray = url.split("-");
+        Integer productId = Integer.valueOf(splitUtilArray[splitUtilArray.length - 1]);
+        Product testProduct = new Product();
+        testProduct.setId(productId);
+        return productSet.contains(testProduct);
     }
 
 }
