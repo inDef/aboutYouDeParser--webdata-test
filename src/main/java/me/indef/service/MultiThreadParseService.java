@@ -10,9 +10,10 @@ public class MultiThreadParseService extends Thread {
 
     private String link;
     private CopyOnWriteArraySet<Product> productSet;
+    private Boolean includeSiblings;
 
     @Override
     public void run() {
-        ProductParser.getProductsByUrlAndAddToProvidedSet(link, productSet);
+        ProductParser.parseProductAddToProvidedSet(link, productSet, includeSiblings);
     }
 }
