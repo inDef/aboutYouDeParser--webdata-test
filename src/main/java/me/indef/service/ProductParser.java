@@ -1,10 +1,9 @@
 package me.indef.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import me.indef.model.Product;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
+import me.indef.util.Counter;
+import me.indef.util.ProductJsonNodeProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,37 +11,24 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 class ProductParser {
 
-    static void getProductsByUrlAndAddToProvidedSet
-            (String url, CopyOnWriteArraySet<Product> productSet) {
+    public static void parseProductAddToProvidedSet(String productUrl, CopyOnWriteArraySet<Product> productSet, Boolean includeSiblings) {
 
-        try {
-            Document categoryPage = Jsoup.connect(url)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36")
-                    .referrer("http://www.google.com").get();
-            CounterService.increaseHTTP();
+        JsonNode productJSON = ProductJsonNodeProvider.getFromUrl(productUrl);
+        if (productJSON == null) return;
 
-            String elementJSON = categoryPage.getElementsByAttributeValue("charSet", "UTF-8")
-                    .get(2).html()
-                    .split(",\"categoriesByPathname\"")[0]
-                    .split(",\"products\":")[1] + "}";
+        Product product = fetchProductFromJsonNode(productJSON);
+        if (productSet.add(product)) Counter.increaseProducts();
 
-            String productId = url.split("-")[url.split("-").length - 1];
-
-            JsonNode productJSON = new ObjectMapper()
-                    .readTree(elementJSON)
-                    .path(productId);
-
-            getProductFromJsonNodeAndAddToProvidedSet(productJSON, productSet);
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (!includeSiblings) return;
+        JsonNode siblings = productJSON.path("siblings");
+        for (JsonNode sibling :
+                siblings) {
+            Product siblingProduct = fetchProductFromJsonNode(sibling);
+            if (productSet.add(siblingProduct)) Counter.increaseProducts();
         }
     }
 
-    private static void getProductFromJsonNodeAndAddToProvidedSet
-            (JsonNode productJSON, CopyOnWriteArraySet<Product> productSet) {
-
-        if (productJSON.size() == 0) return;
+    private static Product fetchProductFromJsonNode(JsonNode productJSON) {
 
         String name = productJSON.path("name").asText();
 
@@ -92,15 +78,7 @@ class ProductParser {
         product.setUrl("https://www.aboutyou.de" + url);
         product.setImageUrl(imageUrl);
 
-        if (productSet.add(product)) CounterService.increaseProducts();
-
-        JsonNode siblings = productJSON.path("siblings");
-        if (siblings.size() > 0) {
-            for (JsonNode sibling :
-                    siblings) {
-                getProductFromJsonNodeAndAddToProvidedSet(sibling, productSet);
-            }
-        }
+        return product;
     }
 
     private static String formatPrice(Integer price, String currency) {
