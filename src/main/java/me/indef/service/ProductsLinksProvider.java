@@ -2,26 +2,23 @@ package me.indef.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import me.indef.util.CategoryIdProvider;
 import me.indef.util.Counter;
 import me.indef.util.ProductLinkBuilder;
 
 import java.net.URL;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProductsLinksProvider {
 
-    public static ConcurrentSkipListSet<String> getByCategoryPageUrl(String url, Integer page, Integer productsPerPage) {
-        ConcurrentSkipListSet<String> links = new ConcurrentSkipListSet<>();
+    public static List<String> getByCategoryId(Integer categoryId, Integer page, Integer productsPerPage) {
+        List<String> links = new ArrayList<>();
 
-        String categoryId = CategoryIdProvider.getCategoryByUrl(url);
         if (categoryId == null) return links;
 
         String apiAddress = "https://api-cloud.aboutyou.de/v1/products?" +
                 "with=attributes:key(brand|name|colorDetail)," +
                 "advancedAttributes:key(siblings)," +
-//                "variants," +
-//                "categories," +
                 "priceRange&filters[category]=" + categoryId +
                 "&sortDir=desc" +
                 "&sortScore=category_scores" +
@@ -36,7 +33,6 @@ public class ProductsLinksProvider {
             JsonNode json = new ObjectMapper().readTree(apiUrl);
             Counter.increaseHTTP();
 
-            JsonNode pagination = json.path("pagination");
             JsonNode entities = json.path("entities");
 
 
