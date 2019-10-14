@@ -7,7 +7,9 @@ import java.io.IOException;
 
 public class CategoryIdProvider {
 
-    public static String getCategoryByUrl(String url) {
+    public static Integer getCategoryByUrl(String url) {
+
+        if (!url.matches("https*://www.aboutyou.de/[a-z,-/]+")) return null;
 
         try {
             Document categoryPage = Jsoup.connect(url)
@@ -15,8 +17,8 @@ public class CategoryIdProvider {
                     .referrer("http://www.google.com").get();
             Counter.increaseHTTP();
 
-            return categoryPage.getElementsByAttributeValue("charSet", "UTF-8").get(2).html()
-                    .split("\"" + url.split("\\?")[0].split("aboutyou.de")[1] + "\":\"")[1].split("\"}")[0];
+            return Integer.valueOf(categoryPage.getElementsByAttributeValue("charSet", "UTF-8").get(2).html()
+                    .split("\"" + url.split("\\?")[0].split("aboutyou.de")[1] + "\":\"")[1].split("\"}")[0]);
 
         } catch (IOException e) {
             e.printStackTrace();
