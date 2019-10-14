@@ -11,6 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 public class Product {
 
+    Integer id;
     private String name;
     private String brand;
     private String color;
@@ -21,4 +22,9 @@ public class Product {
     private String url;
     private String imageUrl;
 
+    @Override
+    public int compareTo(Object o) {
+        Product other = (Product) o;
+        return this.id.compareTo(other.id);
+    }
 }
