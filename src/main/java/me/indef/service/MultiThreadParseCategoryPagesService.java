@@ -2,6 +2,7 @@ package me.indef.service;
 
 import lombok.AllArgsConstructor;
 import me.indef.model.Product;
+import me.indef.util.ProductsLinksProvider;
 
 import java.util.ArrayList;
 import java.util.Collections;
