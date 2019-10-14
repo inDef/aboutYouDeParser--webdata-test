@@ -18,7 +18,7 @@ public class App {
 
 
         String url = "https://www.aboutyou.de/maenner/bekleidung";
-        Integer pages = 100;
+        Integer pages = 1;
 
 
         Set<Product> products = new ConcurrentSkipListSet<>();
