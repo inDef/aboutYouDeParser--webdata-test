@@ -1,4 +1,4 @@
-package me.indef.service;
+package me.indef.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
