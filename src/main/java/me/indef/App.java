@@ -1,29 +1,34 @@
 package me.indef;
 
 import me.indef.model.Product;
-import me.indef.service.CounterService;
-import me.indef.service.JsonToFileService;
-import me.indef.service.MultiThreadParseService;
-import me.indef.service.ProductsLinksProvider;
+import me.indef.service.MultiThreadParseCategoryPagesService;
+import me.indef.util.CategoryIdProvider;
+import me.indef.util.Counter;
+import me.indef.util.JsonToFileService;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 public class App {
-    private static List<Thread> threads = new ArrayList<>();
 
     public static void main(String[] args) {
 
-        CopyOnWriteArraySet<Product> resultSet = new CopyOnWriteArraySet<>();
 
-        ConcurrentSkipListSet<String> links = ProductsLinksProvider.getByCategoryPageUrl("https://www.aboutyou.de/maenner/bekleidung", 1, 99);
+        String url = "https://www.aboutyou.de/maenner/bekleidung";
+        Integer pages = 100;
 
-        for (String link : links) {
-            Thread parse = new MultiThreadParseService(link, resultSet);
-            threads.add(parse);
-            parse.start();
+
+        Set<Product> products = new ConcurrentSkipListSet<>();
+        Integer categoryId = CategoryIdProvider.getCategoryByUrl(url);
+        List<Thread> threads = Collections.synchronizedList(new ArrayList<>());
+
+        for (Integer page = 1; page <= pages; page++) {
+            Thread parsePages = new MultiThreadParseCategoryPagesService(categoryId, page, products);
+            threads.add(parsePages);
+            parsePages.start();
         }
 
         do {
@@ -34,10 +39,9 @@ public class App {
             }
         } while (threadsStillWork(threads));
 
-        JsonToFileService.writeToFile(resultSet);
-        System.out.println("Http requests done: " + CounterService.getHttpRequestsCounter());
-        System.out.println("Products retrieved: " + CounterService.getProductsRetrievedCounter());
-
+        JsonToFileService.writeToFile(products);
+        System.out.println("Http requests done: " + Counter.getHttpRequestsCounter());
+        System.out.println("Products retrieved: " + Counter.getProductsRetrievedCounter());
     }
 
     private static boolean threadsStillWork(List<Thread> threads) {
@@ -46,7 +50,6 @@ public class App {
                 return true;
             }
         }
-
         return false;
     }
 }
