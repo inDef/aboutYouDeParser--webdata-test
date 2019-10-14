@@ -9,7 +9,7 @@ import java.util.List;
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
-public class Product {
+public class Product implements Comparable {
 
     Integer id;
     private String name;
