@@ -1,9 +1,7 @@
-package me.indef.service;
+package me.indef.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import me.indef.util.Counter;
-import me.indef.util.ProductLinkBuilder;
 
 import java.net.URL;
 import java.util.ArrayList;
