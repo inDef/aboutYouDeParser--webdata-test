@@ -12,23 +12,24 @@ import java.util.concurrent.Semaphore;
 
 class ProductParser {
 
-    private static final Semaphore SEMAPHORE = new Semaphore(100, true);
+    private static final Semaphore SEMAPHORE = new Semaphore(50, true);
 
     public static void parseProductAddToProvidedSet(String productUrl, Set<Product> productSet, Boolean includeSiblings) {
 
+        JsonNode productJSON = null;
+
         try {
             SEMAPHORE.acquire();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        JsonNode productJSON = null;
 
         if (!doesProductSetContainProductByUrl(productUrl, productSet)) {
             productJSON = ProductJsonNodeProvider.getFromUrl(productUrl);
         }
 
         SEMAPHORE.release();
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         if (productJSON == null) return;
 
