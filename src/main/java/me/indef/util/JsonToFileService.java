@@ -18,7 +18,7 @@ public class JsonToFileService {
         }
 
         try {
-            objectMapper.writeValue(new File(DIR + SEP + "products.json"), object);
+            objectMapper.writeValue(new File(DIR + SEP + "output.json"), object);
         } catch (IOException e) {
             e.printStackTrace();
         }
