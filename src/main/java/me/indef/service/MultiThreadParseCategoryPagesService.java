@@ -16,9 +16,19 @@ public class MultiThreadParseCategoryPagesService extends Thread {
     private Integer page;
     private Set<Product> products;
 
+    private static boolean threadsStillWork(List<Thread> threads) {
+        for (Thread thread : threads) {
+            if (thread.getState().equals(Thread.State.NEW) || thread.isAlive()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     @Override
     public void run() {
-        List<String> links = ProductsLinksProvider.getByCategoryId(categoryId, page , 100);
+        List<String> links = ProductsLinksProvider.getByCategoryId(categoryId, page, 100);
         List<Thread> threads = Collections.synchronizedList(new ArrayList<>());
 
         for (String link : links) {
@@ -34,15 +44,5 @@ public class MultiThreadParseCategoryPagesService extends Thread {
                 e.printStackTrace();
             }
         } while (threadsStillWork(threads));
-    }
-
-    private static boolean threadsStillWork(List<Thread> threads) {
-        for (Thread thread : threads) {
-            if (thread.getState().equals(Thread.State.NEW) || thread.isAlive()) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

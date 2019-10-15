@@ -21,11 +21,11 @@ class ProductParser {
         try {
             SEMAPHORE.acquire();
 
-        if (!doesProductSetContainProductByUrl(productUrl, productSet)) {
-            productJSON = ProductJsonNodeProvider.getFromUrl(productUrl);
-        }
+            if (!doesProductSetContainProductByUrl(productUrl, productSet)) {
+                productJSON = ProductJsonNodeProvider.getFromUrl(productUrl);
+            }
 
-        SEMAPHORE.release();
+            SEMAPHORE.release();
 
         } catch (InterruptedException e) {
             e.printStackTrace();
